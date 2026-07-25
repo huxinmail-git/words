@@ -56,17 +56,28 @@ function RewardBurst({ streak, medal }) {
   );
 }
 
-function Skyline() {
+function StudyIllustration() {
   return (
-    <svg className="skyline" viewBox="0 0 420 170" role="img" aria-label="天津之眼与城市剪影">
-      <g fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="250" cy="77" r="55" /><circle cx="250" cy="77" r="4" />
-        {[0, 30, 60, 90, 120, 150].map((angle) => {
-          const rad = angle * Math.PI / 180;
-          return <line key={angle} x1="250" y1="77" x2={250 + Math.cos(rad) * 55} y2={77 + Math.sin(rad) * 55} />;
-        })}
-        <path d="M226 132l-18 28M274 132l18 28M0 151h420M13 151v-37h34v37M55 151V96h30v55M94 151v-25h42v25M337 151v-43h38v43M384 151v-68h23v68" />
-        <path d="M0 160c58-9 111-8 162 0s103 8 148 0 82-8 110 0" />
+    <svg className="study-illustration" viewBox="0 0 360 180" role="img" aria-label="单词卡片与英语练习册">
+      <path className="illustration-shadow" d="M31 153c60-13 115-13 166 0 46 12 92 11 137-2" />
+      <g className="word-card word-card-a">
+        <rect x="35" y="38" width="72" height="86" rx="8" />
+        <text x="71" y="82" textAnchor="middle">A</text>
+        <path d="M51 100h40" />
+      </g>
+      <g className="word-card word-card-b">
+        <rect x="250" y="25" width="75" height="91" rx="8" />
+        <text x="287.5" y="72" textAnchor="middle">B</text>
+        <path d="M267 92h41" />
+      </g>
+      <g className="book-art">
+        <path d="M111 66c30-10 53-4 70 11v68c-17-15-40-21-70-11z" />
+        <path d="M251 66c-30-10-53-4-70 11v68c17-15 40-21 70-11z" />
+        <path d="M181 77v68" />
+        <path d="M127 91c17-4 29-1 39 5M127 107c17-4 29-1 39 5M235 91c-17-4-29-1-39 5M235 107c-17-4-29-1-39 5" />
+      </g>
+      <g className="spark-art">
+        <path d="M143 34v18M134 43h18M218 35l6 7 9-1-5 8 3 9-10-3-8 6v-10l-7-6 10-3z" />
       </g>
     </svg>
   );
@@ -93,7 +104,9 @@ function App() {
 
   const current = queue[index];
   const masteredCount = progress.mastered.length;
-  const wrongWords = useMemo(() => wordBank.filter(item => progress.mistakes[item.word]), [progress]);
+  const wrongWords = useMemo(() => Array.from(new Map(
+    wordBank.filter(item => progress.mistakes[item.word]).map(item => [item.word, item])
+  ).values()), [progress]);
   const streak = Number(sessionStorage.getItem('jinci-streak') || 0);
   const medalCount = Math.floor(progress.correctTotal / 10);
   const medalProgress = progress.correctTotal % 10;
@@ -182,12 +195,25 @@ function App() {
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
+  useEffect(() => {
+    if (!result || view !== 'practice') return undefined;
+
+    function handleNextQuestion(event) {
+      if (event.key !== 'Enter' || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      event.preventDefault();
+      nextQuestion();
+    }
+
+    document.addEventListener('keydown', handleNextQuestion);
+    return () => document.removeEventListener('keydown', handleNextQuestion);
+  }, [result, view, index, queue, mode, wrongWords, selectedWords]);
+
   return (
     <div className="app-shell">
       <header>
         <button className="brand" onClick={() => { setView('practice'); resetDaily(); }} aria-label="返回今日练习">
-          <span className="brand-mark">津</span>
-          <span><strong>津词</strong><small>初中英语填空</small></span>
+          <span className="brand-mark"><BookOpen size={22} /></span>
+          <span><strong>词跃</strong><small>初中英语练习</small></span>
         </button>
         <nav aria-label="主导航">
           <button className={view === 'practice' ? 'active' : ''} onClick={() => setView('practice')}><BookOpen size={18} />今日练习</button>
@@ -205,7 +231,7 @@ function App() {
                 <h1>{mode === 'review' ? '再遇见一次，就真正记住。' : '不限题数，一直向前。'}</h1>
                 <p>{mode === 'review' ? `正在复习 ${queue.length} 个错词` : '每答对 10 题解锁一枚勋章，首字母已在句中保留。'}</p>
               </div>
-              <Skyline />
+              <StudyIllustration />
             </section>
 
             <section className="grade-selector" aria-label="选择练习年级">
@@ -229,7 +255,7 @@ function App() {
               <div className={`question-panel ${result || ''}`}>
                 {result === 'correct' && <RewardBurst streak={streak} medal={medalEarned} />}
                 <div className="question-top">
-                  <div className="question-tags"><span className="grade-tag">{current?.grade}</span>{current?.type === 'tense' && <span className="grammar-tag">词形变化</span>}{current?.examYear && <span className="exam-tag">{current.examYear} 天津中考真题</span>}</div>
+                  <div className="question-tags"><span className="grade-tag">{current?.grade}</span>{current?.type === 'tense' && <span className="grammar-tag">词形变化</span>}{current?.simulation && <span className="simulation-tag">中考仿真</span>}{current?.examYear && <span className="exam-tag">{current.examYear} 天津中考真题</span>}</div>
                   <span className="question-count">已完成 {progress.attemptedTotal} 题</span>
                 </div>
                 <div className="progress-track medal-track" title={`距离下一枚勋章还差 ${10 - medalProgress} 题`}><span style={{ width: `${medalProgress * 10}%` }} /></div>
@@ -300,7 +326,7 @@ function App() {
           </section>
         )}
       </main>
-      <footer>津词 · 为天津初中英语学习设计</footer>
+      <footer>词跃 · 让每一次练习都有进步</footer>
     </div>
   );
 }

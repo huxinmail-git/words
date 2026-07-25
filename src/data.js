@@ -1,4 +1,6 @@
-export const wordBank = [
+import { simulatedBank } from './simulatedBank.js';
+
+const coreBank = [
   { word: 'beautiful', meaning: '美丽的', grade: '七年级', sentence: 'The Haihe River looks beautiful at night.', translation: '海河在夜晚看起来很美。' },
   { word: 'famous', meaning: '著名的', grade: '七年级', sentence: 'Tianjin is famous for its traditional snacks.', translation: '天津以传统小吃闻名。' },
   { word: 'practice', meaning: '练习', grade: '七年级', sentence: 'We practice speaking English every morning.', translation: '我们每天早上练习说英语。' },
@@ -64,3 +66,5 @@ export const wordBank = [
   { word: 'arrives', meaning: 'arrive 的第三人称单数：到达', grade: '中考语法', type: 'tense', baseWord: 'arrive', grammar: '一般现在时', explanation: '列车时刻表通常使用一般现在时，主语 train 为第三人称单数。', sentence: 'The train arrives at Tianjin Station at half past nine.', translation: '火车九点半到达天津站。' },
   { word: 'working', meaning: 'work 的现在分词：工作', grade: '中考语法', type: 'tense', baseWord: 'work', grammar: '现在进行时', explanation: 'Look! 是现在进行时的信号，结构为 is/am/are doing。', sentence: 'Look! The volunteers are working in the community garden.', translation: '看！志愿者们正在社区花园劳动。' }
 ];
+
+export const wordBank = [...coreBank, ...simulatedBank];
